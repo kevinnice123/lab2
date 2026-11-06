@@ -2,108 +2,175 @@
 {
     public class MushroomForm : BaseForm
     {
-        private Label lblQuestion;
-        private Button btnYes, btnNo, btnStart;
-        private int questionNo;
+        private ComboBox cmbGills, cmbForest, cmbRing, cmbCup;
+        private ListBox lstMushrooms;
 
-        private enum Q { None, Ring, Forest, Cup, CupNoRing, Gills }
-        private Q current = Q.None;
+        // ---- Colors (change these to restyle the screen) ----
+        private static readonly Color BackgroundColor = Color.FromArgb(40, 40, 40);    // dark gray
+        private static readonly Color TextColor = Color.White;
+        private static readonly Color ButtonColor = Color.FromArgb(90, 90, 90);    // medium gray
+        private static readonly Color LogoutColor = Color.Black;
+        private static readonly Color InputBackColor = Color.FromArgb(235, 235, 235); // light gray boxes
+
+        // Facts from the lab sheet: gills, forest, ring, convex cup
+        private static readonly (string Name, bool Gills, bool Forest, bool Ring, bool Cup)[] Mushrooms =
+        {
+            ("Agaric Jaunissant",  true,  false, true,  true),
+            ("Amanite tue-mouche", true,  true,  true,  true),
+            ("Cepe de Bordeaux",   false, true,  false, false),
+            ("Coprin chevelu",     true,  false, true,  false),
+            ("Girolle",            true,  true,  false, false),
+            ("Pied bleu",          true,  true,  false, true),
+        };
 
         public MushroomForm()
         {
-            Text = "Mushroom";
-            ClientSize = new Size(460, 300);
+            Text = "Mushroom guessing";
+            ClientSize = new Size(720, 500);
+            BackColor = BackgroundColor;
+            ForeColor = TextColor;
 
+            // Title and instruction
+            var lblTitle = new Label
+            {
+                Text = "Mushroom guessing",
+                Left = 0,
+                Top = 20,
+                Width = 720,
+                Height = 35,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Segoe UI", 16F, FontStyle.Bold)
+            };
             var lblInfo = new Label
             {
-                Text = "Think of one of these mushrooms:\nAgaric jaunissant, Amanite tue-mouche, Cepe de Bordeaux,\nCoprin chevelu, Girolle, Pied bleu.",
-                Left = 20,
-                Top = 15,
-                Width = 420,
-                Height = 60
+                Text = "Think of one of the six mushrooms and answer the questions",
+                Left = 0,
+                Top = 65,
+                Width = 720,
+                Height = 25,
+                TextAlign = ContentAlignment.MiddleCenter
             };
 
-            btnStart = new Button { Text = "Start", Left = 20, Top = 85, Width = 420, Height = 35 };
-            btnStart.Click += (s, e) => StartGame();
-
-            lblQuestion = new Label
+            // Left side: questions
+            var lblQuestions = new Label
             {
-                Text = "Press Start to begin.",
-                Left = 20,
-                Top = 135,
-                Width = 420,
-                Height = 50,
+                Text = "Questions",
+                Left = 40,
+                Top = 120,
+                Width = 340,
+                Height = 28,
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold)
             };
 
-            btnYes = new Button { Text = "Yes", Left = 20, Top = 190, Width = 200, Height = 35, Enabled = false };
-            btnNo = new Button { Text = "No", Left = 240, Top = 190, Width = 200, Height = 35, Enabled = false };
-            btnYes.Click += (s, e) => Answer(true);
-            btnNo.Click += (s, e) => Answer(false);
+            cmbGills = AddQuestion("1. Does your mushroom have gills?", 165);
+            cmbForest = AddQuestion("2. Does it grow in a forest?", 215);
+            cmbRing = AddQuestion("3. Does it have a ring?", 265);
+            cmbCup = AddQuestion("4. Does it have a convex cup?", 315);
 
-            var btnBack = new Button { Text = "Back", Left = 20, Top = 245, Width = 200, Height = 35 };
-            var btnLogout = new Button { Text = "Logout", Left = 240, Top = 245, Width = 200, Height = 35 };
+            // Right side: the six mushrooms
+            var lblList = new Label
+            {
+                Text = "The six mushrooms",
+                Left = 410,
+                Top = 120,
+                Width = 270,
+                Height = 28,
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold)
+            };
+            lstMushrooms = new ListBox
+            {
+                Left = 410,
+                Top = 165,
+                Width = 270,
+                Height = 140,
+                BackColor = InputBackColor,
+                ForeColor = Color.Black
+            };
+            foreach (var m in Mushrooms) lstMushrooms.Items.Add(m.Name);
+
+            // Buttons
+            var btnFind = MakeButton("Find mushroom", 270, 370, 180, 40, ButtonColor);
+            btnFind.Font = new Font("Segoe UI", 10F, FontStyle.Bold | FontStyle.Italic);
+            btnFind.Click += BtnFind_Click;
+
+            var btnBack = MakeButton("Back", 40, 440, 100, 38, ButtonColor);
+            var btnLogout = MakeButton("Logout", 580, 440, 100, 38, LogoutColor);
             btnBack.Click += (s, e) => Nav.Go(this, new ChooseForm());
             btnLogout.Click += (s, e) => Nav.Go(this, new LoginForm());
 
-            Controls.AddRange(new Control[] { lblInfo, btnStart, lblQuestion, btnYes, btnNo, btnBack, btnLogout });
-        }
-
-        private void StartGame()
-        {
-            questionNo = 0;
-            btnYes.Enabled = true;
-            btnNo.Enabled = true;
-            btnStart.Text = "Restart";
-            Ask(Q.Ring);
-        }
-
-        private void Ask(Q q)
-        {
-            current = q;
-            questionNo++;
-            string text = q switch
+            Controls.AddRange(new Control[]
             {
-                Q.Ring => "Does your mushroom have a ring?",
-                Q.Forest => "Does your mushroom grow in a forest?",
-                Q.Cup or Q.CupNoRing => "Does your mushroom have a convex cup?",
-                Q.Gills => "Does your mushroom have gills?",
-                _ => ""
+                lblTitle, lblInfo, lblQuestions, lblList, lstMushrooms,
+                btnFind, btnBack, btnLogout
+            });
+        }
+
+        private Button MakeButton(string text, int left, int top, int width, int height, Color back)
+        {
+            var btn = new Button
+            {
+                Text = text,
+                Left = left,
+                Top = top,
+                Width = width,
+                Height = height,
+                BackColor = back,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
             };
-            lblQuestion.Text = $"Question {questionNo}/3:\n{text}";
+            btn.FlatAppearance.BorderColor = Color.Gray;
+            return btn;
         }
 
-        // Decision tree: never more than 3 questions
-        private void Answer(bool yes)
+        // Creates one question label and its Yes/No dropdown
+        private ComboBox AddQuestion(string text, int top)
         {
-            switch (current)
+            var lbl = new Label { Text = text, Left = 40, Top = top + 4, Width = 230, Height = 25 };
+            var cmb = new ComboBox
             {
-                case Q.Ring:
-                    Ask(yes ? Q.Forest : Q.CupNoRing);
-                    break;
-                case Q.Forest:
-                    if (yes) Result("Amanite tue-mouche"); else Ask(Q.Cup);
-                    break;
-                case Q.Cup:
-                    Result(yes ? "Agaric jaunissant" : "Coprin chevelu");
-                    break;
-                case Q.CupNoRing:
-                    if (yes) Result("Pied bleu"); else Ask(Q.Gills);
-                    break;
-                case Q.Gills:
-                    Result(yes ? "Girolle" : "Cepe de Bordeaux");
-                    break;
-            }
+                Left = 280,
+                Top = top,
+                Width = 100,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = InputBackColor,
+                ForeColor = Color.Black
+            };
+            cmb.Items.AddRange(new object[] { "Yes", "No" });
+            Controls.Add(lbl);
+            Controls.Add(cmb);
+            return cmb;
         }
 
-        private void Result(string name)
+        private void BtnFind_Click(object sender, EventArgs e)
         {
-            current = Q.None;
-            btnYes.Enabled = false;
-            btnNo.Enabled = false;
-            lblQuestion.Text = $"Your mushroom is: {name}";
-            MessageBox.Show($"Your mushroom is: {name}", "Result",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (cmbGills.SelectedIndex < 0 || cmbForest.SelectedIndex < 0 ||
+                cmbRing.SelectedIndex < 0 || cmbCup.SelectedIndex < 0)
+            {
+                MessageBox.Show("Please answer all four questions (Yes or No).", "Missing answer",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Index 0 = Yes, index 1 = No
+            bool gills = cmbGills.SelectedIndex == 0;
+            bool forest = cmbForest.SelectedIndex == 0;
+            bool ring = cmbRing.SelectedIndex == 0;
+            bool cup = cmbCup.SelectedIndex == 0;
+
+            foreach (var m in Mushrooms)
+            {
+                if (m.Gills == gills && m.Forest == forest && m.Ring == ring && m.Cup == cup)
+                {
+                    lstMushrooms.SelectedItem = m.Name;
+                    MessageBox.Show($"Your mushroom is: {m.Name}", "Result",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+
+            lstMushrooms.ClearSelected();
+            MessageBox.Show("No mushroom matches these answers. Please check them and try again.",
+                "No match", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }
 }

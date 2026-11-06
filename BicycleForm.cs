@@ -7,25 +7,37 @@
         public BicycleForm()
         {
             Text = "Bicycle Rental";
-            ClientSize = new Size(380, 290);
+            ClientSize = new Size(380, 340);
 
-            var lblStart = new Label { Text = "Start hour (0 - 23):", Left = 20, Top = 25, AutoSize = true };
-            txtStart = new TextBox { Left = 220, Top = 22, Width = 130 };
-            var lblEnd = new Label { Text = "End hour (1 - 24):", Left = 20, Top = 70, AutoSize = true };
-            txtEnd = new TextBox { Left = 220, Top = 67, Width = 130 };
+            var lblTitle = new Label
+            {
+                Text = "Bicycle Rental",
+                Left = 0,
+                Top = 15,
+                Width = 380,
+                Height = 35,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Segoe UI", 16F, FontStyle.Bold)
+            };
 
-            var btnCalc = new Button { Text = "Calculate", Left = 20, Top = 115, Width = 330, Height = 35 };
+            var lblStart = new Label { Text = "Start hour (0 - 23):", Left = 20, Top = 75, AutoSize = true };
+            txtStart = MakeTextBox(220, 72, 130);
+            var lblEnd = new Label { Text = "End hour (1 - 24):", Left = 20, Top = 120, AutoSize = true };
+            txtEnd = MakeTextBox(220, 117, 130);
+
+            var btnCalc = MakeButton("Calculate", 20, 165, 330, 38);
             btnCalc.Click += BtnCalc_Click;
 
-            var lblTotal = new Label { Text = "Total (RWF):", Left = 20, Top = 170, AutoSize = true };
-            txtTotal = new TextBox { Left = 220, Top = 167, Width = 130, ReadOnly = true };
+            var lblTotal = new Label { Text = "Total (RWF):", Left = 20, Top = 225, AutoSize = true };
+            txtTotal = MakeTextBox(220, 222, 130);
+            txtTotal.ReadOnly = true;
 
-            var btnBack = new Button { Text = "Back", Left = 20, Top = 225, Width = 150, Height = 35 };
-            var btnLogout = new Button { Text = "Logout", Left = 200, Top = 225, Width = 150, Height = 35 };
+            var btnBack = MakeButton("Back", 20, 280, 150, 38);
+            var btnLogout = MakeButton("Logout", 200, 280, 150, 38, dark: true);
             btnBack.Click += (s, e) => Nav.Go(this, new ChooseForm());
             btnLogout.Click += (s, e) => Nav.Go(this, new LoginForm());
 
-            Controls.AddRange(new Control[] { lblStart, txtStart, lblEnd, txtEnd, btnCalc,
+            Controls.AddRange(new Control[] { lblTitle, lblStart, txtStart, lblEnd, txtEnd, btnCalc,
                                               lblTotal, txtTotal, btnBack, btnLogout });
             AcceptButton = btnCalc;
         }

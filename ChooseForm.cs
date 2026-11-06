@@ -5,16 +5,26 @@
         public ChooseForm()
         {
             Text = "Choose";
-            ClientSize = new Size(340, 160);
+            ClientSize = new Size(340, 200);
 
-            var lbl = new Label { Text = "What would you like to use?", Left = 20, Top = 20, AutoSize = true };
-            var btnBicycle = new Button { Text = "Bicycle", Left = 30, Top = 70, Width = 120, Height = 40 };
-            var btnMushroom = new Button { Text = "Mushroom", Left = 190, Top = 70, Width = 120, Height = 40 };
+            var lblTitle = new Label
+            {
+                Text = "What would you like to use?",
+                Left = 0,
+                Top = 20,
+                Width = 340,
+                Height = 35,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Segoe UI", 13F, FontStyle.Bold)
+            };
+
+            var btnBicycle = MakeButton("Bicycle", 30, 90, 130, 45);
+            var btnMushroom = MakeButton("Mushroom", 180, 90, 130, 45);
 
             btnBicycle.Click += (s, e) => Nav.Go(this, new BicycleForm());
             btnMushroom.Click += (s, e) => Nav.Go(this, new MushroomForm());
 
-            Controls.AddRange(new Control[] { lbl, btnBicycle, btnMushroom });
+            Controls.AddRange(new Control[] { lblTitle, btnBicycle, btnMushroom });
         }
     }
 }
